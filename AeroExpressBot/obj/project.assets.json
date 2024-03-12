@@ -31,14 +31,14 @@
           }
         }
       },
-      "FileManager/1.0.0": {
+      "FileProcessing/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
         "compile": {
-          "bin/placeholder/FileManager.dll": {}
+          "bin/placeholder/FileProcessing.dll": {}
         },
         "runtime": {
-          "bin/placeholder/FileManager.dll": {}
+          "bin/placeholder/FileProcessing.dll": {}
         }
       }
     }
@@ -89,15 +89,15 @@
         "telegram.bot.nuspec"
       ]
     },
-    "FileManager/1.0.0": {
+    "FileProcessing/1.0.0": {
       "type": "project",
-      "path": "../FileManager/FileManager.csproj",
-      "msbuildProject": "../FileManager/FileManager.csproj"
+      "path": "../FileProcessing/FileProcessing.csproj",
+      "msbuildProject": "../FileProcessing/FileProcessing.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net6.0": [
-      "FileManager >= 1.0.0",
+      "FileProcessing >= 1.0.0",
       "Telegram.Bot >= 20.0.0-alpha.1"
     ]
   },
@@ -126,8 +126,8 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "projectReferences": {
-            "/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/FileManager.csproj": {
-              "projectPath": "/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/FileManager.csproj"
+            "/Users/lroofer/RiderProjects/AeroExpressBot/FileProcessing/FileProcessing.csproj": {
+              "projectPath": "/Users/lroofer/RiderProjects/AeroExpressBot/FileProcessing/FileProcessing.csproj"
             }
           }
         }

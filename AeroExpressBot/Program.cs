@@ -1,51 +1,31 @@
-﻿using Telegram.Bot;
-using Telegram.Bot.Exceptions;
-using Telegram.Bot.Polling;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
+﻿using FileProcessing;
 
-var botClient = new TelegramBotClient("6359168538:AAHbx-fnUR8BlOoTL1MzR9YVTTulDqF9c2w");
+namespace AeroExpressBot;
+using static Markup;
 
-using CancellationTokenSource cts = new();
-
-ReceiverOptions receiverOptions = new()
+internal static class Program
 {
-    AllowedUpdates = Array.Empty<UpdateType>()
-};
-
-botClient.StartReceiving(
-    updateHandler: HandleUpdateAsync,
-    pollingErrorHandler: HandlePollingErrorAsync,
-    receiverOptions: receiverOptions,
-    cancellationToken: cts.Token
-);
-
-var me = await botClient.GetMeAsync();
-
-Console.WriteLine($"Start listening for {me.Username}");
-Console.ReadLine();
-cts.Cancel();
-
-async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-{
-    if (update.Message is not { } message) return;
-    if (message.Text is not { } messageText) return;
-    var chatId = message.Chat.Id;
-    Console.WriteLine($"Received a '{messageText}' message in char {chatId}'");
-    var sentMessage = await botClient.SendTextMessageAsync(
-        chatId: chatId,
-        text: $"You said:\n{messageText}",
-        cancellationToken: cancellationToken);
-}
-
-Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
-{
-    var errorMessage = exception switch
+    private static void Main()
     {
-        ApiRequestException apiRequestException =>
-            $"Telegram API error:\n [{apiRequestException.ErrorCode}]\n[{apiRequestException.Message}]",
-        _ => exception.ToString()
-    };
-    Console.WriteLine(errorMessage);
-    return Task.CompletedTask;
+        Manager.Init();
+        do
+        {
+            try
+            {
+                var bot = new Bot();
+                Header("Starting bot manager...");
+                _ = Task.Run(() => bot.StartBot());
+                Header("Press Q to exit the bot");
+                while (Console.ReadKey(true).Key != ConsoleKey.Q){}
+                return;
+            }
+            catch (Exception e)
+            {
+                Warning($"There's been an error with starting the bot manager:\n{e.Message}");
+                Header("Press Y to reload, any other key to exit");
+                if (Console.ReadKey(true).Key != ConsoleKey.Y) return;
+            }
+            
+        } while (true);
+    }
 }

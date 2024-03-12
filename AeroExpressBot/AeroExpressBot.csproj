@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\FileManager\FileManager.csproj" />
+      <ProjectReference Include="..\FileProcessing\FileProcessing.csproj" />
     </ItemGroup>
 
 </Project>

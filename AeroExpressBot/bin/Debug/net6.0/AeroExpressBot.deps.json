@@ -8,7 +8,7 @@
     ".NETCoreApp,Version=v6.0": {
       "AeroExpressBot/1.0.0": {
         "dependencies": {
-          "FileManager": "1.0.0",
+          "FileProcessing": "1.0.0",
           "Telegram.Bot": "20.0.0-alpha.1"
         },
         "runtime": {
@@ -34,9 +34,9 @@
           }
         }
       },
-      "FileManager/1.0.0": {
+      "FileProcessing/1.0.0": {
         "runtime": {
-          "FileManager.dll": {}
+          "FileProcessing.dll": {}
         }
       }
     }
@@ -61,7 +61,7 @@
       "path": "telegram.bot/20.0.0-alpha.1",
       "hashPath": "telegram.bot.20.0.0-alpha.1.nupkg.sha512"
     },
-    "FileManager/1.0.0": {
+    "FileProcessing/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

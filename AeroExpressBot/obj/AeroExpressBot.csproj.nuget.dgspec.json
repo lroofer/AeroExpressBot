@@ -26,8 +26,8 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/FileManager.csproj": {
-                "projectPath": "/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/FileManager.csproj"
+              "/Users/lroofer/RiderProjects/AeroExpressBot/FileProcessing/FileProcessing.csproj": {
+                "projectPath": "/Users/lroofer/RiderProjects/AeroExpressBot/FileProcessing/FileProcessing.csproj"
               }
             }
           }
@@ -67,14 +67,14 @@
         }
       }
     },
-    "/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/FileManager.csproj": {
+    "/Users/lroofer/RiderProjects/AeroExpressBot/FileProcessing/FileProcessing.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/FileManager.csproj",
-        "projectName": "FileManager",
-        "projectPath": "/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/FileManager.csproj",
+        "projectUniqueName": "/Users/lroofer/RiderProjects/AeroExpressBot/FileProcessing/FileProcessing.csproj",
+        "projectName": "FileProcessing",
+        "projectPath": "/Users/lroofer/RiderProjects/AeroExpressBot/FileProcessing/FileProcessing.csproj",
         "packagesPath": "/Users/lroofer/.nuget/packages/",
-        "outputPath": "/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/obj/",
+        "outputPath": "/Users/lroofer/RiderProjects/AeroExpressBot/FileProcessing/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/lroofer/.nuget/NuGet/NuGet.Config"

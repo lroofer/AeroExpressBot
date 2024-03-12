@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AeroExpressBot", "AeroExpressBot\AeroExpressBot.csproj", "{AA4A84F2-C4AE-43B0-B7FA-4F6E9CE93DF9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileManager", "FileManager\FileManager.csproj", "{087C0BA2-90E7-4D4E-BC44-C811A8043E43}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileProcessing", "FileProcessing\FileProcessing.csproj", "{2F1F549E-DE31-4B51-8F31-D1B99AC22E1B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,9 +14,9 @@ Global
 		{AA4A84F2-C4AE-43B0-B7FA-4F6E9CE93DF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA4A84F2-C4AE-43B0-B7FA-4F6E9CE93DF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA4A84F2-C4AE-43B0-B7FA-4F6E9CE93DF9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{087C0BA2-90E7-4D4E-BC44-C811A8043E43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{087C0BA2-90E7-4D4E-BC44-C811A8043E43}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{087C0BA2-90E7-4D4E-BC44-C811A8043E43}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{087C0BA2-90E7-4D4E-BC44-C811A8043E43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F1F549E-DE31-4B51-8F31-D1B99AC22E1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F1F549E-DE31-4B51-8F31-D1B99AC22E1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F1F549E-DE31-4B51-8F31-D1B99AC22E1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F1F549E-DE31-4B51-8F31-D1B99AC22E1B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
