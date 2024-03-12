@@ -1,0 +1,12 @@
+/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/bin/Debug/net6.0/FileManager.deps.json
+/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/bin/Debug/net6.0/FileManager.dll
+/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/bin/Debug/net6.0/FileManager.pdb
+/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/obj/Debug/net6.0/FileManager.csproj.AssemblyReference.cache
+/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/obj/Debug/net6.0/FileManager.GeneratedMSBuildEditorConfig.editorconfig
+/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/obj/Debug/net6.0/FileManager.AssemblyInfoInputs.cache
+/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/obj/Debug/net6.0/FileManager.AssemblyInfo.cs
+/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/obj/Debug/net6.0/FileManager.csproj.CoreCompileInputs.cache
+/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/obj/Debug/net6.0/FileManager.dll
+/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/obj/Debug/net6.0/refint/FileManager.dll
+/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/obj/Debug/net6.0/FileManager.pdb
+/Users/lroofer/RiderProjects/AeroExpressBot/FileManager/obj/Debug/net6.0/ref/FileManager.dll
