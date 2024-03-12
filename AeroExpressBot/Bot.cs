@@ -97,11 +97,12 @@ public class Bot
         if (message.Text is not { } messageText) return;
         var chatId = message.Chat.Id;
         Item($"Received a '{messageText}' message in chat {chatId}'");
-        if (BotOptions.HandleCommand(messageText, out var reply))
+        if (BotOptions.HandleCommand(messageText, out var reply, out var replyMarkup))
         {
             _ = await botClient.SendTextMessageAsync(
                 chatId: chatId,
                 text: reply,
+                replyMarkup: replyMarkup,
                 cancellationToken: cancellationToken
             );
             return;

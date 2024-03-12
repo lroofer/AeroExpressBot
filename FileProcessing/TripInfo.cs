@@ -132,34 +132,39 @@ public class Trips
     /// <summary>
     /// Property that stores a collection.
     /// </summary>
-    public TripInfo[] all { get; }
+    private TripInfo[] All { get; }
     
     /// <returns>True if collection is empty.</returns>
-    public bool Empty() => all.Length == 0;
+    public bool Empty() => All.Length == 0;
     /// <summary>
     /// The constructor that creates a new object from the array of trips.
     /// </summary>
     public Trips(TripInfo[] allTrips)
     {
-        all = allTrips;
+        All = allTrips;
+    }
+    public TripInfo this[int index]
+    {
+        get => All[index];
+        set => All[index] = value;
     }
     /// <summary>
     /// The constructor that creates an empty instance.
     /// </summary>
     public Trips()
     {
-        all = Array.Empty<TripInfo>();
+        All = Array.Empty<TripInfo>();
     }
     /// <summary>
     /// The constructor creates an object based on the data that was collected from the csv file.
     /// </summary>
     /// <param name="list">The data from csv file in the specified format.</param>
-    public Trips(string[] list)
+    public Trips(IReadOnlyList<string> list)
     {
-        all = new TripInfo[list.Length];
-        for (int i = 0; i < list.Length; ++i)
+        All = new TripInfo[list.Count];
+        for (var i = 0; i < list.Count; ++i)
         {
-            all[i] = new TripInfo(list[i].Split(Manager.s_separators, StringSplitOptions.RemoveEmptyEntries));
+            All[i] = new TripInfo(list[i].Split(Manager.s_separators, StringSplitOptions.RemoveEmptyEntries));
         }
     }
    /// <summary>
@@ -168,19 +173,19 @@ public class Trips
    /// <param name="trips">Reference to the cloned object.</param>
     public void Clone(out Trips trips)
     {
-        trips = new Trips(all);
+        trips = new Trips(All);
     }
    /// <summary>
    /// The method exports the info about trips to the format that can be written to a csv file.
    /// </summary>
     public string[] Export()
     {
-        var export = new string[all.Length + 2];
+        var export = new string[All.Length + 2];
         export[0] = Manager.FORMAT_NAMES;
         export[1] = Manager.FORMAT_COLUMNS;
-        for (int i = 0; i < all.Length; ++i)
+        for (var i = 0; i < All.Length; ++i)
         {
-            export[i + 2] = all[i].ToString();
+            export[i + 2] = All[i].ToString();
         }
 
         return export;
@@ -192,7 +197,7 @@ public class Trips
     public override string ToString()
     {
         StringBuilder sb = new();
-        foreach (var trip in all)
+        foreach (var trip in All)
         {
             sb.Append(trip + "\n");
         }
@@ -204,17 +209,17 @@ public class Trips
    /// </summary>
    public static Trips operator +(Trips a, Trips b)
    {
-       int n = a.all.Length + b.all.Length;
+       int n = a.All.Length + b.All.Length;
        var allTrips = new TripInfo[n];
        for (int i = 0; i < n; ++i)
        {
-           if (i < a.all.Length)
+           if (i < a.All.Length)
            {
-               allTrips[i] = a.all[i];
+               allTrips[i] = a.All[i];
            }
            else
            {
-               allTrips[i] = b.all[i - a.all.Length];
+               allTrips[i] = b.All[i - a.All.Length];
            }
        }
        return new Trips(allTrips);
