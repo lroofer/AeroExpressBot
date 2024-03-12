@@ -132,7 +132,7 @@ public static class BotOptions
                 }
                 else
                 {
-                    message = "Viewing";
+                    message = $"{Manager.MTrips?.Count}";
                     // TODO: View file
                 }
                 keyboardMarkup = new ReplyKeyboardMarkup(new[]

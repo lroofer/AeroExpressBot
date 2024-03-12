@@ -143,6 +143,8 @@ public class Trips
     {
         All = allTrips;
     }
+
+    public int Count => All.Length;
     public TripInfo this[int index]
     {
         get => All[index];
