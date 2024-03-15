@@ -16,6 +16,9 @@ public class BotOptions
 
     public const string BadOpenFile = "[Unknown operation in this context]\nUse /openfile command to open a file";
 
+    public const string NoUsername = "Bot can't get access to your username. Check your privacy settings or " +
+                                     "add a username to your account";
+
     private readonly Manager _manager;
     private enum State
     {
@@ -60,7 +63,7 @@ public class BotOptions
                 keyboardMarkup = new ReplyKeyboardRemove();
                 return true;
             case "/filter" or "Filter":
-                if (!_manager.TryOpenUserFile(username))
+                if (!_manager.TryOpenUserFile(username).Result)
                 {
                     keyboardMarkup = new ReplyKeyboardMarkup(new[]
                     {
@@ -87,7 +90,7 @@ public class BotOptions
 
                 return true;
             case "/sort" or "Sort":
-                if (!_manager.TryOpenUserFile(username))
+                if (!_manager.TryOpenUserFile(username).Result)
                 {
                     keyboardMarkup = new ReplyKeyboardMarkup(new[]
                     {
@@ -113,7 +116,7 @@ public class BotOptions
 
                 return true;
             case "/export" or "Export":
-                if (!_manager.TryOpenUserFile(username))
+                if (!_manager.TryOpenUserFile(username).Result)
                 {
                     message = "None files are open";
                     keyboardMarkup = new ReplyKeyboardMarkup(new[]
@@ -140,7 +143,7 @@ public class BotOptions
                 
                 return true;
             case "/view" or "View":
-                if (!_manager.TryOpenUserFile(username))
+                if (!_manager.TryOpenUserFile(username).Result)
                 {
                     message = "None files are open";
                 }

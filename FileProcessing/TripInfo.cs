@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace FileProcessing;
@@ -168,6 +169,11 @@ public class Trips
         {
             All[i] = new TripInfo(list[i].Split(Manager.s_separators, StringSplitOptions.RemoveEmptyEntries));
         }
+    }
+
+    public string ExportJson()
+    {
+        return JsonSerializer.Serialize(All);
     }
    /// <summary>
    /// The method creates a deep copy of the object.

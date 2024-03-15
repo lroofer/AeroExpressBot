@@ -32,11 +32,9 @@ public class CsvProcessing
         var lines = trips.Export();
         File.WriteAllLines(path, lines); // TODO: Make async.
     }
-    public Stream Write(Trips trips, Manager manager, string username)
+    public Stream Write(Trips trips, string path)
     {
-        string path;
-        UpdateCurrent(
-            path = manager.GetUserFileName(username, "csv"), trips);
+        UpdateCurrent(path, trips);
         return File.OpenRead(path);
     }
 

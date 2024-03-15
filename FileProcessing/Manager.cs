@@ -9,6 +9,7 @@ public class Manager
     public string DataFolder;
     public Dictionary<string, OpenType> Selected;
     public Dictionary<string, Trips> DataTripsMap;
+
     public const string FormatNames =
         "\"Id\";\"StationStart\";\"Line\";\"TimeStart\";\"StationEnd\";\"TimeEnd\";\"global_id\";";
 
@@ -19,17 +20,22 @@ public class Manager
 
     public enum OpenType
     {
-        Closed, OpenCsv, OpenJson
+        Closed,
+        OpenCsv,
+        OpenJson
     }
 
     public enum FilterOptions
     {
-        StationStart, StationEnd, Both
+        StationStart,
+        StationEnd,
+        Both
     }
 
     public enum SortOptions
     {
-        TimeStart, TimeEnd
+        TimeStart,
+        TimeEnd
     }
 
     public Manager()
@@ -52,75 +58,90 @@ public class Manager
 
         Console.WriteLine($"Selected data directory: {DataFolder}");
     }
+
     public void Filter(FilterOptions filterOptions)
     {
-        
     }
 
     public void Sort(SortOptions sortOptions)
     {
-        
     }
-    
-    public bool ProcessFile(string path, string username, out string msg)
+
+    public async Task<(bool, string)> ProcessFile(string path, string username)
     {
-        Header(path);
         try
         {
             switch (Path.GetExtension(path))
             {
                 case ".csv":
-                    var stream = File.OpenRead(path);
-                    var csvProcessor = new CsvProcessing();
-                    Selected[username] = OpenType.OpenCsv;
-                    DataTripsMap[username] = csvProcessor.Read(stream);
-                    stream.Close();
-                    msg = "Csv file was read";
-                    break;
+                    await using (var stream = File.OpenRead(path))
+                    {
+                        var csvProcessor = new CsvProcessing();
+                        Selected[username] = OpenType.OpenCsv;
+                        DataTripsMap[username] = csvProcessor.Read(stream);
+                        stream.Close();
+                        return (true, "Csv file was read");
+                    }
                 case ".json":
-                    var jsonProcessor = new JsonProcessing();
-                    var jsonStream = File.OpenRead(path);
-                    Selected[username] = OpenType.OpenJson;
-                    DataTripsMap[username] = jsonProcessor.Read(jsonStream);
-                    msg = "Json file was read";
-                    break;
+                    await using (var jsonStream = File.OpenRead(path))
+                    {
+                        var jsonProcessor = new JsonProcessing();
+                        Selected[username] = OpenType.OpenJson;
+                        DataTripsMap[username] = jsonProcessor.Read(jsonStream);
+                        jsonStream.Close();
+                        return (true, "Json file was read");
+                    }
                 default:
                     throw new Exception($"Unknown extension: {Path.GetExtension(path)}");
             }
-
-            return true;
         }
         catch (Exception e)
         {
-            msg = e.Message;
-            return false;
+            return (false, e.Message);
         }
     }
 
     public void ClearUserData(string username)
     {
-        var file = GetUserFileName(username, Selected[username] == OpenType.OpenCsv ? "csv" : "json");
-        File.Delete(file);
-        Selected[username] = OpenType.Closed;
+        if (Selected.ContainsKey(username))
+        {
+            var file = GetUserFileName(username, Selected[username] == OpenType.OpenCsv ? "csv" : "json");
+            File.Delete(file);
+            Selected[username] = OpenType.Closed;
+        }
     }
 
     public Stream ExportData(string username, string extension)
     {
-        throw new NotImplementedException();
+        var file = GetUserFileName(username, extension);
+        switch (extension)
+        {
+            case "json":
+                var jsonProcessor = new JsonProcessing();
+                return jsonProcessor.Write(DataTripsMap[username], file);
+            case "csv":
+                var csvProcessor = new CsvProcessing();
+                return csvProcessor.Write(DataTripsMap[username], file);
+            default:
+                throw new ArgumentException($"Wrong format: {extension}");
+        }
     }
-    
-    public string GetUserFileName(string username, string extenstion) => $"{Path.Join(DataFolder, username)}.{extenstion}";
-    
-    public bool TryOpenUserFile(string username)
+
+    public string GetUserFileName(string username, string extenstion) =>
+        $"{Path.Join(DataFolder, username)}.{extenstion}";
+
+    public async Task<bool> TryOpenUserFile(string username)
     {
         if (Selected.ContainsKey(username) && Selected[username] != OpenType.Closed) return true;
         var fileCsv = GetUserFileName(username, "csv");
-        if (ProcessFile(fileCsv, username, out var msg1))
+        var result = await ProcessFile(fileCsv, username);
+        if (result.Item1)
         {
             return true;
         }
 
         var fileJson = GetUserFileName(username, "json");
-        return ProcessFile(fileJson, username, out var msg2);
+        var res = await ProcessFile(fileJson, username);
+        return res.Item1;
     }
 }
