@@ -108,7 +108,20 @@ public class Bot
                 cancellationToken: cancellationToken
             );
             return;
-        } 
+        }
+
+        switch (reply)
+        {
+            case "Exporting to json":
+                var stream1 = _manager.ExportData(username, "json");
+                _ = await botClient.SendDocumentAsync(chatId: chatId, document: InputFile.FromStream(stream: stream1, fileName: $"{username}.json"), caption: reply, cancellationToken: cancellationToken);
+                return;
+            case "Exporting to csv":
+                var stream2 = _manager.ExportData(username, "csv");
+                _ = await botClient.SendDocumentAsync(chatId: chatId, document: InputFile.FromStream(stream: stream2, fileName: $"{username}.csv"), caption: reply, cancellationToken: cancellationToken);
+                return;
+        }
+
         _ = await botClient.SendTextMessageAsync(
             chatId: chatId,
             text: $"Unknown command:\n{messageText}",

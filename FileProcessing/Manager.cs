@@ -9,10 +9,10 @@ public class Manager
     public string DataFolder;
     public Dictionary<string, OpenType> Selected;
     public Dictionary<string, Trips> DataTripsMap;
-    public const string FORMAT_NAMES =
+    public const string FormatNames =
         "\"Id\";\"StationStart\";\"Line\";\"TimeStart\";\"StationEnd\";\"TimeEnd\";\"global_id\";";
 
-    public const string FORMAT_COLUMNS =
+    public const string FormatColumns =
         "\"Локальный идентификатор\";\"Станция отправления\";\"Направление Аэроэкспресс\";\"Время отправления со станции\";\"Конечная станция направления Аэроэкспресс\";\"Время прибытия на конечную станцию направления Аэроэкспресс\";\"global_id\";";
 
     public static char[] s_separators = { ';', '\"' };
@@ -61,6 +61,7 @@ public class Manager
     {
         
     }
+    
     public bool ProcessFile(string path, string username, out string msg)
     {
         Header(path);
@@ -103,6 +104,11 @@ public class Manager
         Selected[username] = OpenType.Closed;
     }
 
+    public Stream ExportData(string username, string extension)
+    {
+        throw new NotImplementedException();
+    }
+    
     public string GetUserFileName(string username, string extenstion) => $"{Path.Join(DataFolder, username)}.{extenstion}";
     
     public bool TryOpenUserFile(string username)

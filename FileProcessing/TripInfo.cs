@@ -183,8 +183,8 @@ public class Trips
     public string[] Export()
     {
         var export = new string[All.Length + 2];
-        export[0] = Manager.FORMAT_NAMES;
-        export[1] = Manager.FORMAT_COLUMNS;
+        export[0] = Manager.FormatNames;
+        export[1] = Manager.FormatColumns;
         for (var i = 0; i < All.Length; ++i)
         {
             export[i + 2] = All[i].ToString();

@@ -19,7 +19,7 @@ public class BotOptions
     private readonly Manager _manager;
     private enum State
     {
-        Filter, Sort, Default
+        Filter, Sort, Default, Export
     }
 
     public BotOptions(Manager manager)
@@ -27,6 +27,7 @@ public class BotOptions
         _manager = manager;
     }
     private State _currentState = State.Default;
+    // true if caller doesn't need to take action.
     public bool HandleCommand(string command, string username, out string message, out IReplyMarkup keyboardMarkup)
     {
         switch (command)
@@ -115,20 +116,28 @@ public class BotOptions
                 if (!_manager.TryOpenUserFile(username))
                 {
                     message = "None files are open";
+                    keyboardMarkup = new ReplyKeyboardMarkup(new[]
+                    {
+                        new KeyboardButton[] { "Open file", "Filter", "Sort" },
+                        new KeyboardButton[] {"Export", "View", "Help"},
+                    })
+                    {
+                        ResizeKeyboard = true
+                    };
                 }
                 else
                 {
-                    message = "Exporting";
-                    // TODO: Export file
+                    message = "Choose an export format";
+                    _currentState = State.Export;
+                    keyboardMarkup = new ReplyKeyboardMarkup(new[]
+                    {
+                        new KeyboardButton[] { "CSV", "JSON" }
+                    })
+                    {
+                        ResizeKeyboard = true
+                    };
                 }
-                keyboardMarkup = new ReplyKeyboardMarkup(new[]
-                {
-                    new KeyboardButton[] { "Open file", "Filter", "Sort" },
-                    new KeyboardButton[] {"Export", "View", "Help"},
-                })
-                {
-                    ResizeKeyboard = true
-                };
+                
                 return true;
             case "/view" or "View":
                 if (!_manager.TryOpenUserFile(username))
@@ -197,6 +206,20 @@ public class BotOptions
                     default:
                         message = "Undefined field for sorting";
                         return false;
+                }
+            case State.Export:
+                _currentState = State.Default;
+                switch (command)
+                {
+                    case "JSON":
+                        message = "Exporting to json";
+                        return false;
+                    case "CSV":
+                        message = "Exporting to csv";
+                        return false;
+                    default:
+                        message = "Undefined format for exporting";
+                        return true;
                 }
             case State.Default:
             default:
