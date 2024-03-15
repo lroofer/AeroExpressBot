@@ -3,7 +3,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace AeroExpressBot;
 
-public static class BotOptions
+public class BotOptions
 {
     private const string StartMessage = "Welcome to Aeroexpress Schedule bot\nThe bot can process CSV and " +
                                         "JSON files that contain information about \nAeroexpresses\n- filter\n" +
@@ -16,19 +16,24 @@ public static class BotOptions
 
     public const string BadOpenFile = "[Unknown operation in this context]\nUse /openfile command to open a file";
 
-    public enum State
+    private readonly Manager _manager;
+    private enum State
     {
         Filter, Sort, Default
     }
 
-    private static State _currentState = State.Default;
-    public static bool HandleCommand(string command, string username, out string message, out IReplyMarkup keyboardMarkup)
+    public BotOptions(Manager manager)
+    {
+        _manager = manager;
+    }
+    private State _currentState = State.Default;
+    public bool HandleCommand(string command, string username, out string message, out IReplyMarkup keyboardMarkup)
     {
         switch (command)
         {
             case "/start":
                 message = StartMessage;
-                Manager.ClearUserData(username);
+                _manager.ClearUserData(username);
                 keyboardMarkup = new ReplyKeyboardMarkup(new[]
                 {
                     new KeyboardButton[] { "Open file", "Help" },
@@ -49,12 +54,12 @@ public static class BotOptions
                 };
                 return true;
             case "/openfile" or "Open another" or "Open file":
-                Manager.ClearUserData(username);
+                _manager.ClearUserData(username);
                 message = "Send your file";
                 keyboardMarkup = new ReplyKeyboardRemove();
                 return true;
             case "/filter" or "Filter":
-                if (!Manager.TryOpenUserFile(username))
+                if (!_manager.TryOpenUserFile(username))
                 {
                     keyboardMarkup = new ReplyKeyboardMarkup(new[]
                     {
@@ -81,7 +86,7 @@ public static class BotOptions
 
                 return true;
             case "/sort" or "Sort":
-                if (!Manager.TryOpenUserFile(username))
+                if (!_manager.TryOpenUserFile(username))
                 {
                     keyboardMarkup = new ReplyKeyboardMarkup(new[]
                     {
@@ -107,7 +112,7 @@ public static class BotOptions
 
                 return true;
             case "/export" or "Export":
-                if (!Manager.TryOpenUserFile(username))
+                if (!_manager.TryOpenUserFile(username))
                 {
                     message = "None files are open";
                 }
@@ -126,13 +131,13 @@ public static class BotOptions
                 };
                 return true;
             case "/view" or "View":
-                if (!Manager.TryOpenUserFile(username))
+                if (!_manager.TryOpenUserFile(username))
                 {
                     message = "None files are open";
                 }
                 else
                 {
-                    message = $"{Manager.DataTripsMap[username].Count}";
+                    message = $"{_manager.DataTripsMap[username].Count}";
                     // TODO: View file
                 }
                 keyboardMarkup = new ReplyKeyboardMarkup(new[]
@@ -162,15 +167,15 @@ public static class BotOptions
                 switch (command)
                 {
                     case "StationStart":
-                        Manager.Filter(Manager.FilterOptions.StationStart);
+                        _manager.Filter(Manager.FilterOptions.StationStart);
                         message = "Filtered by StationStart value";
                         return true;
                     case "StationEnd":
-                        Manager.Filter(Manager.FilterOptions.StationEnd);
+                        _manager.Filter(Manager.FilterOptions.StationEnd);
                         message = "Filtered by StationEnd value";
                         return true;
                     case "StationStart & StationEnd":
-                        Manager.Filter(Manager.FilterOptions.Both);
+                        _manager.Filter(Manager.FilterOptions.Both);
                         message = "Filtered by both StationStart & StationEnd";
                         return true;
                     default:
@@ -182,11 +187,11 @@ public static class BotOptions
                 switch (command)
                 {
                     case "TimeStart (increasing)":
-                        Manager.Sort(Manager.SortOptions.TimeStart);
+                        _manager.Sort(Manager.SortOptions.TimeStart);
                         message = "Sorted by TimeStart increasing";
                         return true;
                     case "TimeEnd(increasing)":
-                        Manager.Sort(Manager.SortOptions.TimeEnd);
+                        _manager.Sort(Manager.SortOptions.TimeEnd);
                         message = "Sorted by TimeEnd increasing";
                         return true;
                     default:
@@ -200,7 +205,7 @@ public static class BotOptions
         }
     }
 
-    public static string Error(string msg)
+    public string Error(string msg)
     {
         return $"There's been an error: {msg}";
     }

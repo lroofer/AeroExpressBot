@@ -4,45 +4,11 @@ namespace FileProcessing;
 
 using static Markup;
 
-/// <summary>
-/// A custom exception: Can't write this file at some point.
-/// </summary>
-public class WriteFileException : Exception
+public class Manager
 {
-    public WriteFileException(string message) : base(message)
-    {
-    }
-
-    public WriteFileException(string message, Exception? innerException) : base(message, innerException)
-    {
-    }
-
-    public override string ToString()
-    {
-        return $"Произошла ошибка при записи файла: {Message} в {StackTrace}";
-    }
-}
-
-/// <summary>
-/// A custom exception: impossible to convert data if it doesn't meet the template.
-/// </summary>
-public class WrongFormatException : Exception
-{
-    public WrongFormatException(string message) : base(message)
-    {
-    }
-
-    public override string ToString()
-    {
-        return $"Произошла ошибка в преобразовании типов: {Message} в {StackTrace}";
-    }
-}
-
-public static class Manager
-{
-    public static string? DataFolder;
-    public static Dictionary<string, OpenType> Selected = new Dictionary<string, OpenType>();
-    public static Dictionary<string, Trips> DataTripsMap = new Dictionary<string, Trips>();
+    public string DataFolder;
+    public Dictionary<string, OpenType> Selected;
+    public Dictionary<string, Trips> DataTripsMap;
     public const string FORMAT_NAMES =
         "\"Id\";\"StationStart\";\"Line\";\"TimeStart\";\"StationEnd\";\"TimeEnd\";\"global_id\";";
 
@@ -65,16 +31,37 @@ public static class Manager
     {
         TimeStart, TimeEnd
     }
-    public static void Filter(FilterOptions filterOptions)
+
+    public Manager()
+    {
+        Selected = new Dictionary<string, OpenType>();
+        DataTripsMap = new Dictionary<string, Trips>();
+        try
+        {
+            DataFolder = Path.Join(Path.GetFullPath("../../../../"), "data");
+            if (!Directory.Exists(DataFolder))
+            {
+                Directory.CreateDirectory(DataFolder);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Couldn't create data directory.\n{e.Message}\n Default was chosen");
+            DataFolder = "";
+        }
+
+        Console.WriteLine($"Selected data directory: {DataFolder}");
+    }
+    public void Filter(FilterOptions filterOptions)
     {
         
     }
 
-    public static void Sort(SortOptions sortOptions)
+    public void Sort(SortOptions sortOptions)
     {
         
     }
-    public static bool ProcessFile(string path, string username, out string msg)
+    public bool ProcessFile(string path, string username, out string msg)
     {
         Header(path);
         try
@@ -109,16 +96,16 @@ public static class Manager
         }
     }
 
-    public static void ClearUserData(string username)
+    public void ClearUserData(string username)
     {
         var file = GetUserFileName(username, Selected[username] == OpenType.OpenCsv ? "csv" : "json");
         File.Delete(file);
         Selected[username] = OpenType.Closed;
     }
 
-    public static string GetUserFileName(string username, string extenstion) => $"{Path.Join(DataFolder, username)}.{extenstion}";
+    public string GetUserFileName(string username, string extenstion) => $"{Path.Join(DataFolder, username)}.{extenstion}";
     
-    public static bool TryOpenUserFile(string username)
+    public bool TryOpenUserFile(string username)
     {
         if (Selected.ContainsKey(username) && Selected[username] != OpenType.Closed) return true;
         var fileCsv = GetUserFileName(username, "csv");
@@ -129,23 +116,5 @@ public static class Manager
 
         var fileJson = GetUserFileName(username, "json");
         return ProcessFile(fileJson, username, out var msg2);
-    }
-    public static void Init()
-    {
-        try
-        {
-            DataFolder = Path.Join(Path.GetFullPath("../../../../"), "data");
-            if (!Directory.Exists(DataFolder))
-            {
-                Directory.CreateDirectory(DataFolder);
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"Couldn't create data directory.\n{e.Message}\n Default was chosen");
-            DataFolder = "";
-        }
-
-        Console.WriteLine($"Selected data directory: {DataFolder}");
     }
 }

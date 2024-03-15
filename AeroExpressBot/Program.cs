@@ -7,7 +7,6 @@ internal static class Program
 {
     private static void Main()
     {
-        Manager.Init();
         do
         {
             try

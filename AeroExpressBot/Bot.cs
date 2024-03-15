@@ -12,8 +12,9 @@ using static Markup;
 
 public class Bot
 {
+    private readonly BotOptions _botOptions;
+    private readonly Manager _manager;
     private string BotToken { get; }
-    
     private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         if (update.Message is null) return;
@@ -22,7 +23,7 @@ public class Bot
         if (update.Message.Document is not null)
         {
             var document = update.Message.Document;
-            if (Manager.TryOpenUserFile(username))
+            if (_manager.TryOpenUserFile(username))
             {
                 _ = await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
@@ -39,7 +40,7 @@ public class Bot
             {
                 _ = await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
-                    text: BotOptions.Error("Telegram didn't process the file"),
+                    text: _botOptions.Error("Telegram didn't process the file"),
                     cancellationToken: cancellationToken
                 );
                 return;
@@ -48,7 +49,7 @@ public class Bot
             string destinationAddress;
             try
             {
-                destinationAddress = Manager.GetUserFileName(username, filePath.Split('.')[^1]);
+                destinationAddress = _manager.GetUserFileName(username, filePath.Split('.')[^1]);
                 await using var fileStream = System.IO.File.Create(destinationAddress);
                 await botClient.DownloadFileAsync(
                     filePath: filePath,
@@ -58,16 +59,16 @@ public class Bot
             }
             catch (Exception e)
             {
-                Warning("There's been a error with a file");
+                Warning($"There's been a error with a file: {e.Message}");
                 _ = await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
-                    text: BotOptions.Error("Can't load file"),
+                    text: _botOptions.Error("Can't load file"),
                     cancellationToken: cancellationToken
                 );
                 return;
             }
 
-            if (Manager.ProcessFile(destinationAddress, username, out var msg))
+            if (_manager.ProcessFile(destinationAddress, username, out var msg))
             {
                 ReplyKeyboardMarkup replyKeyboardMarkup = new(new[]
                 {
@@ -88,7 +89,7 @@ public class Bot
                 Warning($"[Error downloading file: {msg}]");
                 _ = await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
-                    text: BotOptions.Error(msg),
+                    text: _botOptions.Error(msg),
                     cancellationToken: cancellationToken
                 );
             }
@@ -98,7 +99,7 @@ public class Bot
         if (message.Text is not { } messageText) return;
         var chatId = message.Chat.Id;
         Item($"Received a '{messageText}' message in chat {chatId}'");
-        if (BotOptions.HandleCommand(messageText, username, out var reply, out var replyMarkup))
+        if (_botOptions.HandleCommand(messageText, username, out var reply, out var replyMarkup))
         {
             _ = await botClient.SendTextMessageAsync(
                 chatId: chatId,
@@ -150,6 +151,8 @@ public class Bot
 
     public Bot(string botToken = "6359168538:AAHbx-fnUR8BlOoTL1MzR9YVTTulDqF9c2w")
     {
+        _manager = new Manager();
+        _botOptions = new BotOptions(_manager);
         BotToken = botToken;
     }
 }
