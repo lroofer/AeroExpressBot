@@ -41,9 +41,8 @@ public class WrongFormatException : Exception
 public static class Manager
 {
     public static string? DataFolder;
-    public static string? FileName;
-    public static Trips? MTrips;
-
+    public static Dictionary<string, OpenType> Selected = new Dictionary<string, OpenType>();
+    public static Dictionary<string, Trips> DataTripsMap = new Dictionary<string, Trips>();
     public const string FORMAT_NAMES =
         "\"Id\";\"StationStart\";\"Line\";\"TimeStart\";\"StationEnd\";\"TimeEnd\";\"global_id\";";
 
@@ -51,6 +50,11 @@ public static class Manager
         "\"Локальный идентификатор\";\"Станция отправления\";\"Направление Аэроэкспресс\";\"Время отправления со станции\";\"Конечная станция направления Аэроэкспресс\";\"Время прибытия на конечную станцию направления Аэроэкспресс\";\"global_id\";";
 
     public static char[] s_separators = { ';', '\"' };
+
+    public enum OpenType
+    {
+        Closed, OpenCsv, OpenJson
+    }
 
     public enum FilterOptions
     {
@@ -70,7 +74,7 @@ public static class Manager
     {
         
     }
-    public static bool ProcessFile(string path, out string msg)
+    public static bool ProcessFile(string path, string username, out string msg)
     {
         Header(path);
         try
@@ -80,16 +84,16 @@ public static class Manager
                 case ".csv":
                     var stream = File.OpenRead(path);
                     var csvProcessor = new CsvProcessing();
-                    FileName = path;
-                    MTrips = csvProcessor.Read(stream);
+                    Selected[username] = OpenType.OpenCsv;
+                    DataTripsMap[username] = csvProcessor.Read(stream);
                     stream.Close();
                     msg = "Csv file was read";
                     break;
                 case ".json":
                     var jsonProcessor = new JsonProcessing();
                     var jsonStream = File.OpenRead(path);
-                    FileName = path;
-                    MTrips = jsonProcessor.Read(jsonStream);
+                    Selected[username] = OpenType.OpenJson;
+                    DataTripsMap[username] = jsonProcessor.Read(jsonStream);
                     msg = "Json file was read";
                     break;
                 default:
@@ -105,11 +109,32 @@ public static class Manager
         }
     }
 
+    public static void ClearUserData(string username)
+    {
+        var file = GetUserFileName(username, Selected[username] == OpenType.OpenCsv ? "csv" : "json");
+        File.Delete(file);
+        Selected[username] = OpenType.Closed;
+    }
+
+    public static string GetUserFileName(string username, string extenstion) => $"{Path.Join(DataFolder, username)}.{extenstion}";
+    
+    public static bool TryOpenUserFile(string username)
+    {
+        if (Selected.ContainsKey(username) && Selected[username] != OpenType.Closed) return true;
+        var fileCsv = GetUserFileName(username, "csv");
+        if (ProcessFile(fileCsv, username, out var msg1))
+        {
+            return true;
+        }
+
+        var fileJson = GetUserFileName(username, "json");
+        return ProcessFile(fileJson, username, out var msg2);
+    }
     public static void Init()
     {
         try
         {
-            DataFolder = Path.Join(Directory.GetCurrentDirectory(), "data");
+            DataFolder = Path.Join(Path.GetFullPath("../../../../"), "data");
             if (!Directory.Exists(DataFolder))
             {
                 Directory.CreateDirectory(DataFolder);

@@ -18,10 +18,11 @@ public class Bot
     {
         if (update.Message is null) return;
         var message = update.Message;
+        var username = message.Chat.Username ?? "user_0";
         if (update.Message.Document is not null)
         {
             var document = update.Message.Document;
-            if (Manager.FileName != null)
+            if (Manager.TryOpenUserFile(username))
             {
                 _ = await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
@@ -30,7 +31,7 @@ public class Bot
                 );
                 return;
             }
-
+            
             var fileId = document.FileId;
             var fileInfo = await botClient.GetFileAsync(fileId, cancellationToken: cancellationToken);
             var filePath = fileInfo.FilePath;
@@ -47,7 +48,7 @@ public class Bot
             string destinationAddress;
             try
             {
-                destinationAddress = Path.Join($"{Manager.DataFolder}", filePath.Split('/')[^1]);
+                destinationAddress = Manager.GetUserFileName(username, filePath.Split('.')[^1]);
                 await using var fileStream = System.IO.File.Create(destinationAddress);
                 await botClient.DownloadFileAsync(
                     filePath: filePath,
@@ -66,7 +67,7 @@ public class Bot
                 return;
             }
 
-            if (Manager.ProcessFile(destinationAddress, out var msg))
+            if (Manager.ProcessFile(destinationAddress, username, out var msg))
             {
                 ReplyKeyboardMarkup replyKeyboardMarkup = new(new[]
                 {
@@ -97,7 +98,7 @@ public class Bot
         if (message.Text is not { } messageText) return;
         var chatId = message.Chat.Id;
         Item($"Received a '{messageText}' message in chat {chatId}'");
-        if (BotOptions.HandleCommand(messageText, out var reply, out var replyMarkup))
+        if (BotOptions.HandleCommand(messageText, username, out var reply, out var replyMarkup))
         {
             _ = await botClient.SendTextMessageAsync(
                 chatId: chatId,

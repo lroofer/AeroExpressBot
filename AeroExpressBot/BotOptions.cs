@@ -22,13 +22,13 @@ public static class BotOptions
     }
 
     private static State _currentState = State.Default;
-    public static bool HandleCommand(string command, out string message, out IReplyMarkup keyboardMarkup)
+    public static bool HandleCommand(string command, string username, out string message, out IReplyMarkup keyboardMarkup)
     {
         switch (command)
         {
             case "/start":
                 message = StartMessage;
-                Manager.FileName = null;
+                Manager.ClearUserData(username);
                 keyboardMarkup = new ReplyKeyboardMarkup(new[]
                 {
                     new KeyboardButton[] { "Open file", "Help" },
@@ -49,12 +49,12 @@ public static class BotOptions
                 };
                 return true;
             case "/openfile" or "Open another" or "Open file":
-                Manager.FileName = null;
+                Manager.ClearUserData(username);
                 message = "Send your file";
                 keyboardMarkup = new ReplyKeyboardRemove();
                 return true;
             case "/filter" or "Filter":
-                if (Manager.FileName == null)
+                if (!Manager.TryOpenUserFile(username))
                 {
                     keyboardMarkup = new ReplyKeyboardMarkup(new[]
                     {
@@ -81,7 +81,7 @@ public static class BotOptions
 
                 return true;
             case "/sort" or "Sort":
-                if (Manager.FileName == null)
+                if (!Manager.TryOpenUserFile(username))
                 {
                     keyboardMarkup = new ReplyKeyboardMarkup(new[]
                     {
@@ -107,7 +107,7 @@ public static class BotOptions
 
                 return true;
             case "/export" or "Export":
-                if (Manager.FileName == null)
+                if (!Manager.TryOpenUserFile(username))
                 {
                     message = "None files are open";
                 }
@@ -126,13 +126,13 @@ public static class BotOptions
                 };
                 return true;
             case "/view" or "View":
-                if (Manager.FileName == null)
+                if (!Manager.TryOpenUserFile(username))
                 {
                     message = "None files are open";
                 }
                 else
                 {
-                    message = $"{Manager.MTrips?.Count}";
+                    message = $"{Manager.DataTripsMap[username].Count}";
                     // TODO: View file
                 }
                 keyboardMarkup = new ReplyKeyboardMarkup(new[]

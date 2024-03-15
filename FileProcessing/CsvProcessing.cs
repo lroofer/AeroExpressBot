@@ -6,6 +6,7 @@ public class CsvProcessing
 {
     public Stream Write(Trips trips)
     {
+        var lines = trips.Export();
         throw new NotImplementedException();
     }
 
