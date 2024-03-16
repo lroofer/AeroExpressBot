@@ -1,3 +1,6 @@
+using System.Text;
+using System.Text.Json;
+
 namespace FileProcessing;
 
 public class JsonProcessing
@@ -5,7 +8,7 @@ public class JsonProcessing
     private void UpdateCurrent(string path, Trips trips)
     {
         var lines = trips.ExportJson();
-        File.WriteAllText(path, lines); // TODO: Make async.
+        File.WriteAllText(path, lines, Encoding.Unicode); // TODO: Make async.
     }
     public Stream Write(Trips trips, string path)
     {
@@ -13,8 +16,8 @@ public class JsonProcessing
         return File.OpenRead(path);
     }
 
-    public Trips Read(Stream stream)
+    public async Task<Trips> Read(Stream stream)
     {
-        throw new NotImplementedException();
+        return new Trips(await JsonSerializer.DeserializeAsync<TripInfo[]>(stream) ?? Array.Empty<TripInfo>());
     }
 }

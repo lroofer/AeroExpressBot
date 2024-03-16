@@ -41,7 +41,7 @@ public class CsvProcessing
     private IEnumerable<string> ReadLines(Stream stream, Encoding encoding)
     {
         var cntLines = 0;
-        using var reader = new StreamReader(stream, encoding: Encoding.UTF8);
+        using var reader = new StreamReader(stream, encoding: encoding);
         while (reader.ReadLine() is { } line)
         {
             if (cntLines++ < 2) continue;
@@ -50,7 +50,7 @@ public class CsvProcessing
     }
     public Trips Read(Stream stream)
     {
-        var lines = ReadLines(stream, Encoding.UTF8);
+        var lines = ReadLines(stream, Encoding.Default);
         
         return new Trips(lines.ToList());
     }

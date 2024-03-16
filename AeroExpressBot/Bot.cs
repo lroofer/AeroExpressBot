@@ -65,7 +65,7 @@ public class Bot
         {
             var document = update.Message.Document;
             var resOpen = await _manager.TryOpenUserFile(username);
-            if (!resOpen)
+            if (resOpen)
             {
                 await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,

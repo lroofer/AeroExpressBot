@@ -1,6 +1,8 @@
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Unicode;
 
 namespace FileProcessing;
 
@@ -81,7 +83,7 @@ public class TripInfo
     }
     
     [JsonPropertyName("global_id")]
-    private string GlobalId { get; }
+    public string GlobalId { get; }
 
     /// <summary>
     /// The constructor of the class TripInfo. It creates an object (new trip) from the array of properties.
@@ -102,6 +104,28 @@ public class TripInfo
         StationEnd = itemFormat[4];
         TimeEnd = itemFormat[5];
         GlobalId = itemFormat[6];
+    }
+
+    public TripInfo()
+    {
+        Id = "1";
+        StationStart = "None";
+        Line = "None";
+        TimeStart = "12:32";
+        StationEnd = "None";
+        TimeEnd = "14:21";
+        GlobalId = "untitled";
+    }
+    
+    public TripInfo(string id, string stationStart, string line, string timeStart, string stationEnd, string timeEnd, string globalId)
+    {
+        Id = id;
+        StationStart = stationStart;
+        Line = line;
+        TimeStart = timeStart;
+        StationEnd = stationEnd;
+        TimeEnd = timeEnd;
+        GlobalId = globalId;
     }
 
     /// <summary>
@@ -173,7 +197,12 @@ public class Trips
 
     public string ExportJson()
     {
-        return JsonSerializer.Serialize(All);
+        var options1 = new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
+            WriteIndented = true
+        };
+        return JsonSerializer.Serialize(All, options1);
     }
    /// <summary>
    /// The method creates a deep copy of the object.

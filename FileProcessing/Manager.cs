@@ -87,7 +87,7 @@ public class Manager
                     {
                         var jsonProcessor = new JsonProcessing();
                         Selected[username] = OpenType.OpenJson;
-                        DataTripsMap[username] = jsonProcessor.Read(jsonStream);
+                        DataTripsMap[username] = await jsonProcessor.Read(jsonStream);
                         jsonStream.Close();
                         return (true, "Json file was read");
                     }
@@ -103,12 +103,11 @@ public class Manager
 
     public void ClearUserData(string username)
     {
-        if (Selected.ContainsKey(username))
-        {
-            var file = GetUserFileName(username, Selected[username] == OpenType.OpenCsv ? "csv" : "json");
-            File.Delete(file);
-            Selected[username] = OpenType.Closed;
-        }
+        var fileJson = GetUserFileName(username, "json");
+        var fileCsv = GetUserFileName(username, "csv");
+        Selected[username] = OpenType.Closed;
+        if (File.Exists(fileJson)) File.Delete(fileJson);
+        if (File.Exists(fileCsv)) File.Delete(fileCsv);
     }
 
     public Stream ExportData(string username, string extension)
