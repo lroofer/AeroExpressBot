@@ -59,8 +59,24 @@ public class Manager
         Console.WriteLine($"Selected data directory: {DataFolder}");
     }
 
-    public void Filter(FilterOptions filterOptions)
+    public void Filter(FilterOptions filterOptions, string username, string value)
     {
+        switch (filterOptions)
+        {
+            case FilterOptions.StationStart:
+                DataTripsMap[username] = new Trips(DataTripsMap[username].Where(u => u.StationStart == value).ToArray());
+                break;
+            case FilterOptions.StationEnd:
+                DataTripsMap[username] = new Trips(DataTripsMap[username].Where(u => u.StationEnd == value).ToArray());
+                break;
+            case FilterOptions.Both:
+                var pars = value.Split('&');
+                if (pars.Length != 2) throw new ArgumentException("Two parameters must be given!");
+                DataTripsMap[username] = new Trips(DataTripsMap[username].Where(u => u.StationStart == pars[0] && u.StationEnd == pars[1]).ToArray());
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(filterOptions), filterOptions, null);
+        }
     }
 
     public void Sort(SortOptions sortOptions, string username)

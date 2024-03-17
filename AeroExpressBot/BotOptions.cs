@@ -22,7 +22,7 @@ public class BotOptions
     private readonly Manager _manager;
     private enum State
     {
-        Filter, Sort, Default, Export
+        Filter, SpecifyStart, SpecifyEnd, SpecifyBoth, Sort, Default, Export
     }
 
     public BotOptions(Manager manager)
@@ -30,9 +30,123 @@ public class BotOptions
         _manager = manager;
     }
     private State _currentState = State.Default;
+
+    private bool HandleQueries(string command, string username, out string message, out IReplyMarkup keyboardMarkup)
+    {
+        keyboardMarkup = new ReplyKeyboardMarkup(new[]
+        {
+            new KeyboardButton[] { "Open file", "Filter", "Sort" },
+            new KeyboardButton[] {"Export", "View", "Help"},
+        })
+        {
+            ResizeKeyboard = true
+        };
+        
+        switch (_currentState)
+        {
+            case State.SpecifyStart:
+                try
+                {
+                    _manager.Filter(Manager.FilterOptions.StationStart, username, command);
+                    message = $"Filtered by {command} value";
+                }
+                catch (Exception e)
+                {
+                    message = $"There's been an error with filtering: {e.Message}";
+                }
+
+                _currentState = State.Default;
+                return true;
+            case State.SpecifyEnd:
+                try
+                {
+                    _manager.Filter(Manager.FilterOptions.StationEnd, username, command);
+                    message = $"Filtered by {command} value";
+                }
+                catch (Exception e)
+                {
+                    message = $"There's been an error with filtering: {e.Message}";
+                }
+
+                _currentState = State.Default;
+                return true;
+            case State.SpecifyBoth:
+                try
+                {
+                    _manager.Filter(Manager.FilterOptions.Both, username, command);
+                    message = $"Filtered by {command} value";
+                }
+                catch (Exception e)
+                {
+                    message = $"There's been an error with filtering: {e.Message}";
+                }
+
+                _currentState = State.Default;
+                return true;
+            case State.Filter:
+                switch (command)
+                {
+                    case "StationStart":
+                        message = "Select value for 'StationStart':";
+                        _currentState = State.SpecifyStart;
+                        keyboardMarkup = new ReplyKeyboardRemove();
+                        return true;
+                    case "StationEnd":
+                        message = "Select value for 'StationEnd':";
+                        keyboardMarkup = new ReplyKeyboardRemove();
+                        _currentState = State.SpecifyEnd;
+                        return true;
+                    case "StationStart & StationEnd":
+                        message = "Select value for 'StationStart'&'StationEnd' (use '&' sign):";
+                        keyboardMarkup = new ReplyKeyboardRemove();
+                        _currentState = State.SpecifyBoth;
+                        return true;
+                    default:
+                        message = "Undefined field for filtering";
+                        _currentState = State.Default;
+                        return false;
+                }
+            case State.Sort:
+                _currentState = State.Default;
+                switch (command)
+                {
+                    case "TimeStart (increasing)":
+                        _manager.Sort(Manager.SortOptions.TimeStart, username);
+                        message = "Sorted by TimeStart increasing";
+                        return true;
+                    case "TimeEnd(increasing)":
+                        _manager.Sort(Manager.SortOptions.TimeEnd, username);
+                        message = "Sorted by TimeEnd increasing";
+                        return true;
+                    default:
+                        message = "Undefined field for sorting";
+                        return false;
+                }
+            case State.Export:
+                _currentState = State.Default;
+                switch (command)
+                {
+                    case "JSON":
+                        message = "Exporting to json";
+                        return false;
+                    case "CSV":
+                        message = "Exporting to csv";
+                        return false;
+                    default:
+                        message = "Undefined format for exporting";
+                        return true;
+                }
+            case State.Default:
+            default:
+                message = "Undefined command";
+                return false;
+        }
+    }
+    
     // true if caller doesn't need to take action.
     public bool HandleCommand(string command, string username, out string message, out IReplyMarkup keyboardMarkup)
     {
+        if (HandleQueries(command, username, out message, out keyboardMarkup)) return true;
         switch (command)
         {
             case "/start":
@@ -163,72 +277,7 @@ public class BotOptions
                 return true;
         }
 
-        keyboardMarkup = new ReplyKeyboardMarkup(new[]
-        {
-            new KeyboardButton[] { "Open file", "Filter", "Sort" },
-            new KeyboardButton[] {"Export", "View", "Help"},
-        })
-        {
-            ResizeKeyboard = true
-        };
-        
-        switch (_currentState)
-        {
-            case State.Filter:
-                _currentState = State.Default;
-                switch (command)
-                {
-                    case "StationStart":
-                        _manager.Filter(Manager.FilterOptions.StationStart);
-                        message = "Filtered by StationStart value";
-                        return true;
-                    case "StationEnd":
-                        _manager.Filter(Manager.FilterOptions.StationEnd);
-                        message = "Filtered by StationEnd value";
-                        return true;
-                    case "StationStart & StationEnd":
-                        _manager.Filter(Manager.FilterOptions.Both);
-                        message = "Filtered by both StationStart & StationEnd";
-                        return true;
-                    default:
-                        message = "Undefined field for filtering";
-                        return false;
-                }
-            case State.Sort:
-                _currentState = State.Default;
-                switch (command)
-                {
-                    case "TimeStart (increasing)":
-                        _manager.Sort(Manager.SortOptions.TimeStart, username);
-                        message = "Sorted by TimeStart increasing";
-                        return true;
-                    case "TimeEnd(increasing)":
-                        _manager.Sort(Manager.SortOptions.TimeEnd, username);
-                        message = "Sorted by TimeEnd increasing";
-                        return true;
-                    default:
-                        message = "Undefined field for sorting";
-                        return false;
-                }
-            case State.Export:
-                _currentState = State.Default;
-                switch (command)
-                {
-                    case "JSON":
-                        message = "Exporting to json";
-                        return false;
-                    case "CSV":
-                        message = "Exporting to csv";
-                        return false;
-                    default:
-                        message = "Undefined format for exporting";
-                        return true;
-                }
-            case State.Default:
-            default:
-                message = "Undefined command";
-                return false;
-        }
+        return false;
     }
 
     public string Error(string msg)
