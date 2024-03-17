@@ -149,7 +149,7 @@ public class BotOptions
                 }
                 else
                 {
-                    message = $"{_manager.DataTripsMap[username].Count}";
+                    message = $"{_manager.DataTripsMap[username]}";
                     // TODO: View file
                 }
                 keyboardMarkup = new ReplyKeyboardMarkup(new[]
@@ -199,11 +199,11 @@ public class BotOptions
                 switch (command)
                 {
                     case "TimeStart (increasing)":
-                        _manager.Sort(Manager.SortOptions.TimeStart);
+                        _manager.Sort(Manager.SortOptions.TimeStart, username);
                         message = "Sorted by TimeStart increasing";
                         return true;
                     case "TimeEnd(increasing)":
-                        _manager.Sort(Manager.SortOptions.TimeEnd);
+                        _manager.Sort(Manager.SortOptions.TimeEnd, username);
                         message = "Sorted by TimeEnd increasing";
                         return true;
                     default:

@@ -63,8 +63,11 @@ public class Manager
     {
     }
 
-    public void Sort(SortOptions sortOptions)
+    public void Sort(SortOptions sortOptions, string username)
     {
+        DataTripsMap[username].Sort((trip1, trip2) => sortOptions == SortOptions.TimeStart
+            ? string.Compare(trip1.TimeStart, trip2.TimeStart, StringComparison.Ordinal)
+            : string.Compare(trip1.TimeEnd, trip2.TimeEnd, StringComparison.Ordinal));
     }
 
     public async Task<(bool, string)> ProcessFile(string path, string username)

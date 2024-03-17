@@ -161,6 +161,7 @@ public class Bot
                 {
                     await botClient.SendDocumentAsync(chatId: chatId,
                         document: InputFile.FromStream(stream: stream1, fileName: $"{username}.json"), caption: reply,
+                        replyMarkup: replyMarkup,
                         cancellationToken: cancellationToken);
                     stream1.Close();
                     return;
@@ -170,6 +171,7 @@ public class Bot
                 {
                     await botClient.SendDocumentAsync(chatId: chatId,
                         document: InputFile.FromStream(stream: stream2, fileName: $"{username}.csv"), caption: reply,
+                        replyMarkup: replyMarkup,
                         cancellationToken: cancellationToken);
                     stream2.Close();
                     return;
@@ -179,6 +181,7 @@ public class Bot
         await botClient.SendTextMessageAsync(
             chatId: chatId,
             text: $"Unknown command:\n{messageText}",
+            replyMarkup: replyMarkup,
             cancellationToken: cancellationToken);
     }
 
