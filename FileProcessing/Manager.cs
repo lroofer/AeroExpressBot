@@ -83,7 +83,7 @@ public class Manager
             }
 
             currentLogName = Path.Join(varFolder,
-                $"tmp-{DateTime.Now}.txt");
+                $"tmp-{DateTime.Now.Day}{DateTime.Now.Month}{DateTime.Now.Year}_{DateTime.Now.Hour}{DateTime.Now.Minute}{DateTime.Now.Second}.txt");
         }
         catch (Exception e)
         {
