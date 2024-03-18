@@ -1,4 +1,5 @@
 using FileProcessing;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -7,8 +8,6 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace AeroExpressBot;
-
-using static Markup;
 
 public class Bot
 {
@@ -43,15 +42,23 @@ public class Bot
 
         var me = await botClient.GetMeAsync(cancellationToken: cts.Token);
 
-        Success($"Start listening for {me.Username}");
+        _manager.Logger.LogInformation($"Start listening for {me.Username}");
     }
 
+    /// <summary>
+    ///  An update handler for queries from Telegram bot.
+    /// Telegram bot invokes it.
+    /// </summary>
+    /// <param name="botClient">Responsive Telegram bot.</param>
+    /// <param name="update">Update info.</param>
+    /// <param name="cancellationToken"></param>
     private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
         CancellationToken cancellationToken)
     {
         if (update.Message is null) return;
         var message = update.Message;
         var username = message.Chat.Username;
+        // Users are distinguished by their username field. 
         if (username == null)
         {
             await botClient.SendTextMessageAsync(
@@ -61,6 +68,16 @@ public class Bot
             );
             return;
         }
+
+        ReplyKeyboardMarkup basicReplyKeyboardMarkup = new(new[]
+        {
+            new KeyboardButton[] { "Sort", "Filter", "View" },
+            new KeyboardButton[] { "Export", "Open another" },
+        })
+        {
+            ResizeKeyboard = true
+        };
+        // Check for an attached document.
         if (update.Message.Document is not null)
         {
             var document = update.Message.Document;
@@ -83,11 +100,20 @@ public class Bot
                 await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
                     text: _botOptions.Error("Telegram didn't process the file"),
+                    replyMarkup: new ReplyKeyboardMarkup(new[]
+                    {
+                        new KeyboardButton[] { "Sort", "Filter", "View" },
+                        new KeyboardButton[] { "Export", "Open another" },
+                    })
+                    {
+                        ResizeKeyboard = true
+                    },
                     cancellationToken: cancellationToken
                 );
                 return;
             }
 
+            // Try to download the file from Telegram to a temporary location.
             string destinationAddress;
             try
             {
@@ -101,38 +127,39 @@ public class Bot
             }
             catch (Exception e)
             {
-                Warning($"There's been a error with a file: {e.Message}");
+                _manager.Logger.LogError($"There's been a error with a file: {e.Message}");
                 await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
                     text: _botOptions.Error("Can't load file"),
+                    replyMarkup: new ReplyKeyboardMarkup(new[]
+                    {
+                        new KeyboardButton[] { "Sort", "Filter", "View" },
+                        new KeyboardButton[] { "Export", "Open another" },
+                    })
+                    {
+                        ResizeKeyboard = true
+                    },
                     cancellationToken: cancellationToken
                 );
                 return;
             }
 
-            var res = await _manager.ProcessFile(destinationAddress, username);
-            if (res.Item1)
+            try
             {
-                ReplyKeyboardMarkup replyKeyboardMarkup = new(new[]
-                {
-                    new KeyboardButton[] { "Sort", "Filter", "View" },
-                    new KeyboardButton[] { "Export", "Open another" },
-                })
-                {
-                    ResizeKeyboard = true
-                };
+                await _manager.ProcessFile(destinationAddress, username);
+                _manager.Logger.LogInformation($"File was loaded to the system: {destinationAddress}");
                 await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
                     text: "File was loaded. How do you want to proceed?",
-                    replyMarkup: replyKeyboardMarkup,
+                    replyMarkup: basicReplyKeyboardMarkup,
                     cancellationToken: cancellationToken);
             }
-            else
+            catch (Exception e)
             {
-                Warning($"[Error downloading file: {res.Item2}]");
+                _manager.Logger.LogError($"[Error downloading file: {e.Message}]");
                 await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
-                    text: _botOptions.Error(res.Item2),
+                    text: _botOptions.Error(e.Message),
                     cancellationToken: cancellationToken
                 );
             }
@@ -140,42 +167,73 @@ public class Bot
             return;
         }
 
+        // Check for any available message.
         if (message.Text is not { } messageText) return;
         var chatId = message.Chat.Id;
-        Item($"Received a '{messageText}' message in chat {chatId}'");
-        if (_botOptions.HandleCommand(messageText, username, out var reply, out var replyMarkup))
+        _manager.Logger.LogInformation($"Received a '{messageText}' message in chat {chatId}'");
+        string reply;
+        IReplyMarkup replyMarkup;
+        try
         {
+            if (_botOptions.HandleBasicCommand(messageText, username, out reply, out replyMarkup))
+            {
+                await botClient.SendTextMessageAsync(
+                    chatId: chatId,
+                    text: reply,
+                    replyMarkup: replyMarkup,
+                    cancellationToken: cancellationToken
+                );
+                return;
+            }
+        }
+        catch (Exception e)
+        {
+            _manager.Logger.LogError(_botOptions.Error(e.Message));
             await botClient.SendTextMessageAsync(
                 chatId: chatId,
-                text: reply,
-                replyMarkup: replyMarkup,
+                text: _botOptions.Error(e.Message),
+                replyMarkup: basicReplyKeyboardMarkup,
                 cancellationToken: cancellationToken
             );
             return;
         }
 
-        switch (reply)
+        try
         {
-            case "Exporting to json":
-                await using (var stream1 = _manager.ExportData(username, "json"))
-                {
-                    await botClient.SendDocumentAsync(chatId: chatId,
-                        document: InputFile.FromStream(stream: stream1, fileName: $"{username}.json"), caption: reply,
-                        replyMarkup: replyMarkup,
-                        cancellationToken: cancellationToken);
-                    stream1.Close();
-                    return;
-                }
-            case "Exporting to csv":
-                await using (var stream2 = _manager.ExportData(username, "csv"))
-                {
-                    await botClient.SendDocumentAsync(chatId: chatId,
-                        document: InputFile.FromStream(stream: stream2, fileName: $"{username}.csv"), caption: reply,
-                        replyMarkup: replyMarkup,
-                        cancellationToken: cancellationToken);
-                    stream2.Close();
-                    return;
-                }
+            switch (reply)
+            {
+                case "Exporting to json":
+                    await using (var stream1 = await _manager.ExportData(username, "json"))
+                    {
+                        await botClient.SendDocumentAsync(chatId: chatId,
+                            document: InputFile.FromStream(stream: stream1, fileName: $"{username}.json"),
+                            caption: reply,
+                            replyMarkup: basicReplyKeyboardMarkup,
+                            cancellationToken: cancellationToken);
+                        stream1.Close();
+                        return;
+                    }
+                case "Exporting to csv":
+                    await using (var stream2 = await _manager.ExportData(username, "csv"))
+                    {
+                        await botClient.SendDocumentAsync(chatId: chatId,
+                            document: InputFile.FromStream(stream: stream2, fileName: $"{username}.csv"),
+                            caption: reply,
+                            replyMarkup: replyMarkup,
+                            cancellationToken: cancellationToken);
+                        stream2.Close();
+                        return;
+                    }
+            }
+        }
+        catch (Exception e)
+        {
+            _manager.Logger.LogError($"Export error: {e.Message}");
+            await botClient.SendTextMessageAsync(
+                chatId: chatId,
+                text: "Exporting wasn't completed due technical issues. Try again!",
+                replyMarkup: replyMarkup,
+                cancellationToken: cancellationToken);
         }
 
         await botClient.SendTextMessageAsync(

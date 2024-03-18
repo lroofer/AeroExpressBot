@@ -16,24 +16,7 @@ public class Trips : IEnumerable<TripInfo>
     /// </summary>
     private TripInfo[] All { get; }
 
-    /// <returns>True if collection is empty.</returns>
-    public bool Empty() => All.Length == 0;
-
-    /// <summary>
-    /// The constructor that creates a new object from the array of trips.
-    /// </summary>
-    public Trips(TripInfo[] allTrips)
-    {
-        All = allTrips;
-    }
-
-    public int Count => All.Length;
-
-    public TripInfo this[int index]
-    {
-        get => All[index];
-        set => All[index] = value;
-    }
+    private int Count => All.Length;
 
     /// <summary>
     /// The constructor that creates an empty instance.
@@ -41,6 +24,14 @@ public class Trips : IEnumerable<TripInfo>
     public Trips()
     {
         All = Array.Empty<TripInfo>();
+    }
+
+    /// <summary>
+    /// The constructor that creates a new object from the array of trips.
+    /// </summary>
+    public Trips(TripInfo[] allTrips)
+    {
+        All = allTrips;
     }
 
     /// <summary>
@@ -54,6 +45,12 @@ public class Trips : IEnumerable<TripInfo>
         {
             All[i] = new TripInfo(list[i].Split(Manager.SSeparators, StringSplitOptions.RemoveEmptyEntries));
         }
+    }
+
+    public TripInfo this[int index]
+    {
+        get => All[index];
+        set => All[index] = value;
     }
 
     public void Sort(Func<TripInfo, TripInfo, int> comparer)
@@ -72,18 +69,9 @@ public class Trips : IEnumerable<TripInfo>
     }
 
     /// <summary>
-    /// The method creates a deep copy of the object.
-    /// </summary>
-    /// <param name="trips">Reference to the cloned object.</param>
-    public void Clone(out Trips trips)
-    {
-        trips = new Trips(All);
-    }
-
-    /// <summary>
     /// The method exports the info about trips to the format that can be written to a csv file.
     /// </summary>
-    public string[] Export()
+    public IEnumerable<string> Export()
     {
         var export = new string[All.Length + 2];
         export[0] = Manager.FormatNames;
@@ -121,27 +109,5 @@ public class Trips : IEnumerable<TripInfo>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
-    }
-
-    /// <summary>
-    /// Overloaded operator +, it appends new trips to the current one.
-    /// </summary>
-    public static Trips operator +(Trips a, Trips b)
-    {
-        int n = a.All.Length + b.All.Length;
-        var allTrips = new TripInfo[n];
-        for (int i = 0; i < n; ++i)
-        {
-            if (i < a.All.Length)
-            {
-                allTrips[i] = a.All[i];
-            }
-            else
-            {
-                allTrips[i] = b.All[i - a.All.Length];
-            }
-        }
-
-        return new Trips(allTrips);
     }
 }

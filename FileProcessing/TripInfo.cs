@@ -1,8 +1,4 @@
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Unicode;
 
 namespace FileProcessing;
 
@@ -14,7 +10,7 @@ public class TripInfo
     private int _id;
     private string _timeStart;
     private string _timeEnd;
-    
+
     [JsonPropertyName("Id")]
     public string Id
     {
@@ -27,12 +23,10 @@ public class TripInfo
             }
         }
     }
-    
-    [JsonPropertyName("StationStart")]
-    public string StationStart{ get; set; }
-    
-    [JsonPropertyName("Line")]
-    public string Line { get; set;  }
+
+    [JsonPropertyName("StationStart")] public string StationStart { get; set; }
+
+    [JsonPropertyName("Line")] public string Line { get; set; }
 
     [JsonPropertyName("TimeStart")]
     public string TimeStart
@@ -56,8 +50,8 @@ public class TripInfo
             _timeStart = value;
         }
     }
-    [JsonPropertyName("StationEnd")]
-    public string StationEnd { get; set;  }
+
+    [JsonPropertyName("StationEnd")] public string StationEnd { get; set; }
 
     [JsonPropertyName("TimeEnd")]
     public string TimeEnd
@@ -81,22 +75,24 @@ public class TripInfo
             _timeEnd = value;
         }
     }
-    
-    [JsonPropertyName("global_id")]
-    public string GlobalId { get; set; }
+
+    [JsonPropertyName("global_id")] public string GlobalId { get; set; }
 
     /// <summary>
     /// The constructor of the class TripInfo. It creates an object (new trip) from the array of properties.
     /// </summary>
     /// <param name="itemFormat">7 properties (corresponding to the given format).</param>
     /// <exception cref="ArgumentException">It'll be thrown in case 'itemFormat' doesn't contain exactly 7 properties.</exception>
-    public TripInfo(string[] itemFormat)
+    public TripInfo(IReadOnlyList<string> itemFormat)
     {
-        if (itemFormat.Length != 7)
+        if (itemFormat.Count != 7)
         {
             throw new ArgumentException("Data doesn't meet the format");
         }
 
+        _id = 0;
+        _timeStart = "00:00";
+        _timeEnd = "00:00";
         Id = itemFormat[0];
         StationStart = itemFormat[1];
         Line = itemFormat[2];
@@ -108,6 +104,9 @@ public class TripInfo
 
     public TripInfo()
     {
+        _id = 0;
+        _timeStart = "00:00";
+        _timeEnd = "00:00";
         Id = "1";
         StationStart = "None";
         Line = "None";
@@ -116,9 +115,13 @@ public class TripInfo
         TimeEnd = "14:21";
         GlobalId = "untitled";
     }
-    
-    public TripInfo(string id, string stationStart, string line, string timeStart, string stationEnd, string timeEnd, string globalId)
+
+    public TripInfo(string id, string stationStart, string line, string timeStart, string stationEnd, string timeEnd,
+        string globalId)
     {
+        _id = 0;
+        _timeStart = "00:00";
+        _timeEnd = "00:00";
         Id = id;
         StationStart = stationStart;
         Line = line;
@@ -137,14 +140,5 @@ public class TripInfo
     {
         return
             $"\"{Id}\";\"{StationStart}\";\"{Line}\";\"{TimeStart}\";\"{StationEnd}\";\"{TimeEnd}\";\"{GlobalId}\";";
-    }
-
-    /// <summary>
-    /// The method writes all the properties to the given array.
-    /// </summary>
-    /// <param name="arr">Reference to the array</param>
-    public void ToArray(out string[] arr)
-    {
-        arr = new []{ Id, StationStart, Line, TimeStart, StationEnd, TimeEnd, GlobalId };
     }
 }

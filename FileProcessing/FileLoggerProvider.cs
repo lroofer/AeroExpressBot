@@ -2,6 +2,9 @@ using Microsoft.Extensions.Logging;
 
 namespace FileProcessing;
 
+/// <summary>
+/// Custom provider for logging to the file.
+/// </summary>
 public class FileLoggerProvider : ILoggerProvider
 {
     private readonly string _logFilePath;
@@ -17,7 +20,9 @@ public class FileLoggerProvider : ILoggerProvider
         return new FileLogger(_logFilePath);
     }
 
-    public void Dispose() { }
+    public void Dispose()
+    {
+    }
 }
 
 public class FileLogger : ILogger
@@ -30,8 +35,6 @@ public class FileLogger : ILogger
         _logFilePath = logFilePath;
     }
 
-    
-
     public bool IsEnabled(LogLevel logLevel)
     {
         return true;
@@ -42,11 +45,13 @@ public class FileLogger : ILogger
         return null;
     }
 
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception, string> formatter)
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+        Func<TState, Exception, string> formatter)
     {
         lock (_lock)
         {
-            File.AppendAllText(_logFilePath, $"{DateTime.Now} [{logLevel}] - {formatter(state, exception ?? new Exception("None"))}{Environment.NewLine}");
+            File.AppendAllText(_logFilePath,
+                $"{DateTime.Now} [{logLevel}] - {formatter(state, exception ?? new Exception("None"))}{Environment.NewLine}");
         }
     }
 }

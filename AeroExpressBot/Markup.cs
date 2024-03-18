@@ -1,22 +1,7 @@
-namespace FileProcessing;
+namespace AeroExpressBot;
 
 public static class Markup
 {
-    public const ConsoleColor BackgroundColor = ConsoleColor.Black;
-    public const ConsoleColor ForegroundColor = ConsoleColor.Green;
-    public const ConsoleColor FolderColor = ConsoleColor.Blue;
-
-    /// <summary>
-    /// The list of common phrases (to change them in one place).
-    /// </summary>
-    public static class Answers
-    {
-        public static void EmptyList()
-        {
-            Header("The list is empty at that moment\nTry adding new elements");
-        }
-    }
-
     /// <summary>
     /// The method that prints colored line.
     /// </summary>
@@ -66,24 +51,5 @@ public static class Markup
     public static void Success(string text, bool moveLine = true)
     {
         PrintColoredLine(text, ConsoleColor.Green, moveLine);
-    }
-
-    /// <summary>
-    /// Prints the text in a certain style.
-    /// </summary>
-    /// <param name="text"></param>
-    /// <param name="moveLine"></param>
-    public static void Item(string text, bool moveLine = true)
-    {
-        PrintColoredLine(text, ConsoleColor.Blue, moveLine);
-    }
-
-    /// <summary>
-    /// Colorful representation of the expression.
-    /// </summary>
-    public static void Formula(string expression, bool moveLine = false)
-    {
-        Console.BackgroundColor = ConsoleColor.DarkGreen;
-        PrintColoredLine(expression, ConsoleColor.White, moveLine);
     }
 }
