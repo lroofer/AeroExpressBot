@@ -1,4 +1,5 @@
 using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace FileProcessing;
 
@@ -6,9 +7,10 @@ using static Markup;
 
 public class Manager
 {
-    public string DataFolder;
-    public Dictionary<string, OpenType> Selected;
-    public Dictionary<string, Trips> DataTripsMap;
+    private readonly string _dataFolder;
+    private readonly Dictionary<string, OpenType> _selected;
+    public readonly Dictionary<string, Trips> DataTripsMap;
+    public readonly ILogger Logger;
 
     public const string FormatNames =
         "\"Id\";\"StationStart\";\"Line\";\"TimeStart\";\"StationEnd\";\"TimeEnd\";\"global_id\";";
@@ -16,9 +18,9 @@ public class Manager
     public const string FormatColumns =
         "\"Локальный идентификатор\";\"Станция отправления\";\"Направление Аэроэкспресс\";\"Время отправления со станции\";\"Конечная станция направления Аэроэкспресс\";\"Время прибытия на конечную станцию направления Аэроэкспресс\";\"global_id\";";
 
-    public static char[] s_separators = { ';', '\"' };
+    public static readonly char[] SSeparators = { ';', '\"' };
 
-    public enum OpenType
+    private enum OpenType
     {
         Closed,
         OpenCsv,
@@ -40,23 +42,47 @@ public class Manager
 
     public Manager()
     {
-        Selected = new Dictionary<string, OpenType>();
+        string currentLogName;
+        string varFolder;
+        _selected = new Dictionary<string, OpenType>();
         DataTripsMap = new Dictionary<string, Trips>();
         try
         {
-            DataFolder = Path.Join(Path.GetFullPath("../../../../"), "data");
-            if (!Directory.Exists(DataFolder))
+            _dataFolder = Path.Join(Path.GetFullPath("../../../../"), "data");
+            if (!Directory.Exists(_dataFolder))
             {
-                Directory.CreateDirectory(DataFolder);
+                Directory.CreateDirectory(_dataFolder);
             }
         }
         catch (Exception e)
         {
             Console.WriteLine($"Couldn't create data directory.\n{e.Message}\n Default was chosen");
-            DataFolder = "";
+            _dataFolder = "";
         }
+        try
+        {
+            varFolder = Path.Join(Path.GetFullPath("../../../../"), "var");
+            if (!Directory.Exists(varFolder))
+            {
+                Directory.CreateDirectory(varFolder);
+            }
 
-        Console.WriteLine($"Selected data directory: {DataFolder}");
+            currentLogName = Path.Join(varFolder,
+                $"tmp-{DateTime.Now}.txt");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Couldn't create var directory.\n{e.Message}\n Default was chosen");
+            varFolder = "";
+            currentLogName = "wrong-format.txt";
+        }
+        var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.AddProvider(new FileLoggerProvider(currentLogName));
+        });
+        Logger = loggerFactory.CreateLogger<Manager>();
+        Logger.LogInformation($"Bot was started at {DateTime.Now}. Logged to {currentLogName}");
+        Console.WriteLine($"Selected data directory: {_dataFolder}");
     }
 
     public void Filter(FilterOptions filterOptions, string username, string value)
@@ -96,7 +122,7 @@ public class Manager
                     await using (var stream = File.OpenRead(path))
                     {
                         var csvProcessor = new CsvProcessing();
-                        Selected[username] = OpenType.OpenCsv;
+                        _selected[username] = OpenType.OpenCsv;
                         DataTripsMap[username] = csvProcessor.Read(stream);
                         stream.Close();
                         return (true, "Csv file was read");
@@ -105,7 +131,7 @@ public class Manager
                     await using (var jsonStream = File.OpenRead(path))
                     {
                         var jsonProcessor = new JsonProcessing();
-                        Selected[username] = OpenType.OpenJson;
+                        _selected[username] = OpenType.OpenJson;
                         DataTripsMap[username] = await jsonProcessor.Read(jsonStream);
                         jsonStream.Close();
                         return (true, "Json file was read");
@@ -124,7 +150,7 @@ public class Manager
     {
         var fileJson = GetUserFileName(username, "json");
         var fileCsv = GetUserFileName(username, "csv");
-        Selected[username] = OpenType.Closed;
+        _selected[username] = OpenType.Closed;
         if (File.Exists(fileJson)) File.Delete(fileJson);
         if (File.Exists(fileCsv)) File.Delete(fileCsv);
     }
@@ -146,11 +172,11 @@ public class Manager
     }
 
     public string GetUserFileName(string username, string extenstion) =>
-        $"{Path.Join(DataFolder, username)}.{extenstion}";
+        $"{Path.Join(_dataFolder, username)}.{extenstion}";
 
     public async Task<bool> TryOpenUserFile(string username)
     {
-        if (Selected.ContainsKey(username) && Selected[username] != OpenType.Closed) return true;
+        if (_selected.ContainsKey(username) && _selected[username] != OpenType.Closed) return true;
         var fileCsv = GetUserFileName(username, "csv");
         var result = await ProcessFile(fileCsv, username);
         if (result.Item1)

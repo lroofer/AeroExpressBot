@@ -52,7 +52,7 @@ public class Trips : IEnumerable<TripInfo>
         All = new TripInfo[list.Count];
         for (var i = 0; i < list.Count; ++i)
         {
-            All[i] = new TripInfo(list[i].Split(Manager.s_separators, StringSplitOptions.RemoveEmptyEntries));
+            All[i] = new TripInfo(list[i].Split(Manager.SSeparators, StringSplitOptions.RemoveEmptyEntries));
         }
     }
 
